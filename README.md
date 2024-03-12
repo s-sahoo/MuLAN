@@ -6,12 +6,10 @@
 
 
 ```bib
-@inproceedings{
-sahoo2023diffusion,
-title={Diffusion Models With Learned Adaptive Noise Processes},
-author={Subham Sahoo and Aaron Gokaslan and Christopher De Sa and Volodymyr Kuleshov},
-booktitle={NeurIPS 2023 Workshop on Diffusion Models},
-year={2023},
-url={https://openreview.net/forum?id=4YBuhK1wSw}
+@article{sahoo2023diffusion,
+  title={Diffusion Models With Learned Adaptive Noise},
+  author={Sahoo, Subham Sekhar and Gokaslan, Aaron and De Sa, Chris and Kuleshov, Volodymyr},
+  journal={arXiv preprint arXiv:2312.13236},
+  year={2023}
 }
 ```
