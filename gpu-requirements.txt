@@ -1,0 +1,9 @@
+# jax[cuda11_pip] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.htm
+jax
+tensorflow
+tensorflow-datasets
+flax==0.7.0
+flaxmodels
+matplotlib
+clu
+tensorflow_addons
