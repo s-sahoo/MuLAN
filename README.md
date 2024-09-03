@@ -12,7 +12,7 @@ We introduce *MuLAN* (MUltivariate Learned Adaptive Noise) that learns the forwa
 | Image Transformer          | 2.90        | 3.77      |
 | DDPM                       | $\leq$ 3.69 | /         |
 | ScoreFlow                  | 2.83        | 3.76      |
-| VDM                        | $\leq$ 2.65 | $\leq$3.72|
+| VDM                        | $\leq$ 2.65 | $\leq$ 3.72|
 | Flow Matching              | 2.99        | /         |
 | Reflected Diffusion Models | 2.68        | 3.74      |
 | **MuLAN** (Ours)           | **2.55**    | **3.67**  |
