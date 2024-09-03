@@ -6,13 +6,13 @@ By [Subham Sekhar Sahoo](https://s-sahoo.github.io), [Aaron Gokaslan](https://sk
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/diffusion-models-with-learned-adaptive-noise/density-estimation-on-cifar-10)](https://paperswithcode.com/sota/density-estimation-on-cifar-10?p=diffusion-models-with-learned-adaptive-noise)
 
 We introduce *MuLAN* (MUltivariate Learned Adaptive Noise) that learns the forward noising process from the data. In this work we dispel the widely held assumption that the ELBO is invariant to the noise process. Empirically, MULAN sets a new **state-of-the-art** in density estimation on CIFAR-10 and ImageNet and reduces the number of training steps by 50% as summarized in the table below (Likelihood in bits per dimension (BPD)):
-|                         | CIFAR-10 $ (\downarrow)$ | ImageNet $(\downarrow)$ |
+|                         | CIFAR-10 $(\downarrow)$ | ImageNet $(\downarrow)$ |
 |----------------------------|-------------|-----------|
 | PixelCNN                   | 3.03        | 3.83      |
 | Image Transformer          | 2.90        | 3.77      |
 | DDPM                       | $\leq$ 3.69 | /         |
 | ScoreFlow                  | 2.83        | 3.76      |
-| VDM                        | $\leq$ 2.65 | $\leq$3.72|
+| VDM                        | $\leq$ 2.65 | $\leq$ 3.72|
 | Flow Matching              | 2.99        | /         |
 | Reflected Diffusion Models | 2.68        | 3.74      |
 | **MuLAN** (Ours)           | **2.55**    | **3.67**  |
