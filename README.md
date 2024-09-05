@@ -25,7 +25,7 @@ Install the dependencies via `pip` using the following commands:
 ```
 pip install -U "jax[cuda12_pip]<=0.4.23" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 
-pip install -r gpu-requirements.txt
+pip install -r requirements.txt
 ```
 
 ### Dataset
