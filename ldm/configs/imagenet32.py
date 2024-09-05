@@ -33,7 +33,7 @@ def get_config():
       ignore_cache=False,
   )
 
-  config.vdm_type = 'z_pp'
+  config.vdm_type = 'mulan_epsilon' # mulan_epsilon, mulan_velocity
 
   config.model = d(
       unet_type='vdm', # ldm, vdm

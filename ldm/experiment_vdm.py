@@ -20,11 +20,8 @@ from typing import Any, Tuple
 
 from ldm.experiment import Experiment
 import ldm.model_vdm
-import ldm.model_vdm_conditioned
-import ldm.model_vdm_z_scalar
-import ldm.model_vdm_z_pp
-import ldm.model_vdm_ppnoise_conditioned
-import ldm.model_vdm_z_pp_velocity
+import ldm.model_mulan_epsilon
+import ldm.model_mulan_veloctiy
 
 
 class Experiment_VDM(Experiment):
@@ -33,11 +30,8 @@ class Experiment_VDM(Experiment):
   def get_model_and_params(self, rng: PRNGKey):
     config = self.config
     vdm_types = {
-        'input_conditioned': ldm.model_vdm_conditioned,
-        'z_scalar': ldm.model_vdm_z_scalar,
-        'z_pp': ldm.model_vdm_z_pp,
-        'z_pp_velocity': ldm.model_vdm_z_pp_velocity,
-        'ppnoise_conditioned': ldm.model_vdm_ppnoise_conditioned,
+        'mulan_epsilon': ldm.model_mulan_epsilon,
+        'mulan_velocity': ldm.model_mulan_veloctiy,
         'vdm': ldm.model_vdm,
       }
     config = ldm.model_vdm.VDMConfig(**config.model)

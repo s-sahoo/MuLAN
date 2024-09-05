@@ -16,7 +16,6 @@
 
 #nvidia-smi
 
-# -u makes python unbuffered which will make stdin/stdout write to the capture file more frequently
 # JAX_DEBUG_NANS=True XLA_PYTHON_CLIENT_MEM_FRACTION=0.85 python -u "$@"
-export TFDS_DATA_DIR=/share/kuleshov/datasets/tensorflow_datasets/ 
+# export TFDS_DATA_DIR=/share/kuleshov/datasets/tensorflow_datasets/ 
 JAX_DEFAULT_MATMUL_PRECISION=float32 XLA_PYTHON_CLIENT_MEM_FRACTION=0.85 python -u "$@"

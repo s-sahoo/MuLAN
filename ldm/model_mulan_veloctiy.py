@@ -18,10 +18,14 @@ import jax
 from jax import numpy as jnp
 
 from ldm import model_vdm
-from ldm import model_vdm_conditioned
-from ldm import model_vdm_ppnoise_conditioned
-from ldm import model_vdm_z_scalar
+from ldm import model_mulan_epsilon
 from ldm import ldm_unet
+
+
+def inner_prod(x, y):
+  x = x.reshape((x.shape[0], -1))
+  y = y.reshape((y.shape[0], -1))
+  return jnp.sum(x * y, axis=-1, keepdims=True)
 
 
 class VDM(nn.Module):
@@ -35,12 +39,14 @@ class VDM(nn.Module):
       self.score_model = model_vdm.ScoreUNet(self.config)
     self.condition = self.config.condition
     if self.config.latent_type in {'gumbel', 'topk'}:
-      self.encoder_model = model_vdm_conditioned.ENCODER_MODELS[self.config.encoder](config=self.config)
+      self.encoder_model = model_mulan_epsilon.ENCODER_MODELS[self.config.encoder](config=self.config)
     elif self.config.latent_type == 'gaussian':
-      self.encoder_model = model_vdm_z_scalar.UnetEncoderGaussian(self.config)
-    self.gamma = model_vdm_ppnoise_conditioned.GAMMA_NETWORKS[self.config.gamma_type](self.config)
+      self.encoder_model = model_mulan_epsilon.UnetEncoderGaussian(self.config)
+    
+    self.gamma = model_mulan_epsilon.GAMMA_NETWORKS[self.config.gamma_type](self.config)
     self.epsilon = self.config.epsilon
-    self.topk_noise_type = self.config.topk_noise_type
+    self.latent_k = self.config.latent_k
+    self.velocity_from_epsilon = self.config.velocity_from_epsilon
 
   def apply_encoder(self, images_int):
     images = self.encdec.encode(images_int)
@@ -99,11 +105,9 @@ class VDM(nn.Module):
 
   def _topk_embedding_and_loss(self, orig_f, k, deterministic):
     logits = self.encoder_model(orig_f,  deterministic)
+    gamma_noise = self._gamma_noise(k=k, shape=logits.shape)
     kl_loss = self._gumbel_kl_loss(logits)
-    if self.topk_noise_type == 'gamma':
-      logits = logits + self._gamma_noise(k=k, shape=logits.shape)
-    elif self.topk_noise_type == 'gumbel':
-      logits = logits + jax.random.gumbel(self.make_rng('sample'), logits.shape)
+    logits = logits + gamma_noise
     
     # sahoo et al. https://arxiv.org/abs/2205.15213
     logits = logits - jnp.mean(logits, axis=1, keepdims=True)
@@ -112,9 +116,6 @@ class VDM(nn.Module):
     top_k_vals, _ = jax.lax.top_k(logits, k)
     assert top_k_vals.shape == (logits.shape[0], k)
     hard_topk = (logits >= top_k_vals[:, -1][:, None]).astype(float)
-    # jax.debug.print('logits {x}', x=logits)
-    # jax.debug.print('top_k_vals {x}', x=top_k_vals)
-    # jax.debug.print('hard_topk {x}', x=jnp.sum(hard_topk, axis=1))
     embedding = jax.lax.stop_gradient(hard_topk - soft_topk) + soft_topk
     return embedding, kl_loss
 
@@ -127,7 +128,7 @@ class VDM(nn.Module):
         orig_f=orig_f, step=step, deterministic=deterministic)
     elif self.config.latent_type == 'topk':
       embedding, kl_z = self._topk_embedding_and_loss(
-        orig_f=orig_f, k=self.config.latent_k, deterministic=deterministic)
+        orig_f=orig_f, k=self.latent_k, deterministic=deterministic)
     elif self.config.latent_type == 'gaussian':
       mu_z, var_z = self.encoder_model(orig_f,  deterministic)
       eps_z = jax.random.normal(self.make_rng('sample'), shape=mu_z.shape)
@@ -136,13 +137,53 @@ class VDM(nn.Module):
         mu_z ** 2 + var_z - jnp.log(var_z) - 1.,
         axis=1)
     return embedding, kl_z
-
+  
   def _get_score_model_gt(self, g_t):
     assert g_t.ndim == 4
     if self.config.unet_type == 'vdm':
       return jnp.mean(g_t, axis=(1 ,2, 3)).reshape(-1)
-    elif self.config.unet_type in {'ldm', 'imp_samp'}:
+    elif self.config.unet_type == 'ldm':
       return g_t
+  
+  def _compute_exact_trace(self, z_t, g_t, conditioning):
+    n_batch = z_t.shape[0]
+    
+    def _reshape_nn(x, gt, c):
+      return self.score_model(
+        x.reshape(n_batch, 32, 32, 3), gt, c).reshape(n_batch, -1)
+    
+    def _per_index_trace(index, z_t, g_t, conditioning):
+      _, trace_i = jax.jvp(
+          _reshape_nn,
+          (z_t.reshape(n_batch, -1), g_t, conditioning),
+          (jax.nn.one_hot(jnp.zeros(n_batch) + index, 32 * 32 * 3),
+            jnp.zeros_like(g_t),
+            jnp.zeros_like(conditioning)))
+      # jax.debug.print('matmul shape:{x}', x=trace_i.shape)
+      return trace_i * jax.nn.one_hot(jnp.zeros(n_batch), 32 * 32 * 3)
+
+    trace = jnp.zeros_like(z_t)
+    for i in range(32, 32, 3):
+      # jax.debug.print('trace shape:{x}', x=trace_i.shape)
+      trace = trace + _per_index_trace(i, z_t, g_t, conditioning).reshape(* z_t.shape)
+    return trace
+
+
+  def _score_jvp_fn(self, z_t, g_t, conditioning, v, deterministic):
+    def score_fn(xt, gt, embeddings):
+      v_hat = self.score_model(
+          xt,
+          self._get_score_model_gt(gt),
+          embeddings,
+          deterministic=deterministic)
+      if self.velocity_from_epsilon:
+        return - v_hat * jnp.sqrt(1 + jnp.exp(- gt))
+      return -xt - jnp.exp(- 0.5 * gt) * v_hat
+    return jax.jvp(
+        score_fn,
+        (z_t, g_t, conditioning),
+        (v, jnp.zeros_like(g_t), jnp.zeros_like(conditioning)))
+
 
   def __call__(
       self, images, labels, conditioning, step, deterministic: bool = True):
@@ -199,28 +240,25 @@ class VDM(nn.Module):
     else:
       conditioning = conditioning[:, None]
 
-    eps_hat = self.score_model(
+    v_hat = self.score_model(
       z_t, self._get_score_model_gt(g_t),
       conditioning, deterministic, time=False)
-    if T == 0:
-      _, g_t_grad = jax.jvp(
+    if self.velocity_from_epsilon:
+      v_hat = (
+        - jnp.exp(0.5 * g_t) * z_t
+        + jnp.sqrt(1 + jnp.exp(g_t)) * v_hat)
+    v_target = jnp.sqrt(1. - var_t) * eps - jnp.sqrt(var_t) * orig_f
+    _, g_t_grad = jax.jvp(
         self._get_gamma,
         (embedding, t),
         (jnp.zeros_like(embedding), jnp.ones_like(t)))
-      g_t_grad = g_t_grad.reshape(* orig_f.shape)
-      assert g_t_grad.shape == orig_f.shape
-      loss_diff = .5 * jnp.sum(
-        g_t_grad * jnp.square(eps - eps_hat),
-        axis=[1, 2, 3])
-    else:
-      # loss for finite depth T, i.e. discrete time
-      s = t - (1./T)
-      g_s = self._get_gamma(embedding, s).reshape(* orig_f.shape)
-      assert g_s.shape == g_t.shape
-      loss_diff = .5 * T * jnp.sum(
-        jnp.expm1(g_t - g_s) * jnp.square(eps - eps_hat),
-        axis=[1, 2, 3])
-  
+    assert T == 0
+    g_t_grad = g_t_grad.reshape(* orig_f.shape)
+    assert g_t_grad.shape == orig_f.shape
+    loss_diff = .5 * jnp.sum(
+      (1 - var_t) * g_t_grad * jnp.square(v_target - v_hat),
+      axis=[1, 2, 3])
+
     return model_vdm.VDMOutput(
         loss_recon=loss_recon,
         loss_klz=kl_z + loss_klz,
@@ -234,9 +272,8 @@ class VDM(nn.Module):
     if self.config.latent_type == 'gumbel':
       return jax.nn.one_hot(jnp.ones(batch_size), k)
     elif self.config.latent_type == 'topk':
-      # TODO: configure this for any `k` in topk
-      ones = jnp.ones((batch_size, self.config.latent_k))
-      zeros = jnp.zeros((batch_size, k - self.config.latent_k))
+      ones = jnp.ones((batch_size, self.latent_k))
+      zeros = jnp.zeros((batch_size, k - self.latent_k))
       return jnp.concatenate([ones, zeros], axis=1)
     elif self.config.latent_type == 'gaussian':
       return jnp.zeros((batch_size, k))
@@ -250,24 +287,27 @@ class VDM(nn.Module):
     t = t * jnp.ones((z_t.shape[0],), z_t.dtype)
     s = s * jnp.ones((z_t.shape[0],), z_t.dtype)
 
-    g_t = self._get_gamma(embedding, t).reshape(* z_t.shape)
-    g_s = self._get_gamma(embedding, s).reshape(* z_t.shape)
+    g_t = self._get_gamma(
+      embedding, t * jnp.ones((z_t.shape[0],), z_t.dtype)).reshape(* z_t.shape)
+    g_s = self._get_gamma(
+      embedding, s * jnp.ones((z_t.shape[0],), z_t.dtype)).reshape(* z_t.shape)
 
     if self.config.z_conditioning:
       conditioning = embedding
     else:
       conditioning = conditioning[:, None]
 
-    eps_hat = self.score_model(
+    v_hat = self.score_model(
         z_t,
         self._get_score_model_gt(g_t),
         conditioning,
         deterministic=True)
-  
     a = nn.sigmoid(-g_s)
     b = nn.sigmoid(-g_t)
     c = - jnp.expm1(g_s - g_t)
     sigma_t = jnp.sqrt(nn.sigmoid(g_t))
+    alpha_t = jnp.sqrt(nn.sigmoid(-g_t))
+    eps_hat = v_hat * alpha_t + sigma_t * z_t
     z_s_mean = jnp.sqrt(a / b) * (z_t - sigma_t * c * eps_hat) 
 
     return z_s_mean + jnp.sqrt((1. - a) * c) * eps
@@ -278,29 +318,33 @@ class VDM(nn.Module):
 
     t = (T - i) / T
     s = (T - i - 1) / T
+
     t = t * jnp.ones((z_t.shape[0],), z_t.dtype)
     s = s * jnp.ones((z_t.shape[0],), z_t.dtype)
     
     embedding = self._get_deterministic_embedding(z_t.shape[0])
 
-    g_t = self._get_gamma(embedding, t).reshape(* z_t.shape)
-    g_s = self._get_gamma(embedding, s).reshape(* z_t.shape)
+    g_t = self._get_gamma(
+      embedding, t * jnp.ones((z_t.shape[0],), z_t.dtype)).reshape(* z_t.shape)
+    g_s = self._get_gamma(
+      embedding, s * jnp.ones((z_t.shape[0],), z_t.dtype)).reshape(* z_t.shape)
 
     if self.config.z_conditioning:
       conditioning = embedding
     else:
       conditioning = conditioning[:, None]
 
-    eps_hat = self.score_model(
-        z=z_t,
-        g_t=self._get_score_model_gt(g_t),
-        conditioning=conditioning,
+    v_hat = self.score_model(
+        z_t,
+        self._get_score_model_gt(g_t),
+        conditioning,
         deterministic=True)
-  
     a = nn.sigmoid(-g_s)
     b = nn.sigmoid(-g_t)
     c = - jnp.expm1(g_s - g_t)
     sigma_t = jnp.sqrt(nn.sigmoid(g_t))
+    alpha_t = jnp.sqrt(nn.sigmoid(-g_t))
+    eps_hat = v_hat * alpha_t + sigma_t * z_t
     z_s_mean = jnp.sqrt(a / b) * (z_t - sigma_t * c * eps_hat) 
 
     return z_s_mean + jnp.sqrt((1. - a) * c) * eps
@@ -323,6 +367,29 @@ class VDM(nn.Module):
 
     return samples
 
+  def sde(self, xt, embeddings, t):
+    t = t * jnp.ones((xt.shape[0],), xt.dtype)
+    assert t.ndim == 1
+    g_t = self._get_gamma(embeddings, t).reshape(* xt.shape)
+    _, g_t_grad = jax.jvp(
+      self._get_gamma,
+      (embeddings, t),
+      (jnp.zeros_like(embeddings), jnp.ones_like(t)))
+    g_t_grad = g_t_grad.reshape(* xt.shape)
+    drift = -0.5 * nn.sigmoid(g_t) * g_t_grad * xt
+    diffusion = jnp.sqrt(nn.sigmoid(g_t) * g_t_grad)
+    return drift, diffusion
+
+
+  def score_fn(self, xt, gt, embeddings):
+    v_hat = self.score_model(
+        xt,
+        self._get_score_model_gt(gt),
+        embeddings,
+        deterministic=False)
+    return -xt - jnp.exp(- 0.5 * gt) * v_hat
+
+
   def reverse_ode(self, xt, embeddings, t, high_precision=False):
     """Create the reverse-time ODE."""
     g_t = self._get_gamma(embeddings, t).reshape(* xt.shape)
@@ -330,16 +397,25 @@ class VDM(nn.Module):
       self._get_gamma,
       (embeddings, t),
       (jnp.zeros_like(embeddings), jnp.ones_like(t)))
-    eps_hat = self.score_model(
+    v_hat = self.score_model(
         xt,
         self._get_score_model_gt(g_t),
         embeddings,
         deterministic=True)
+    if self.velocity_from_epsilon:
+      v_hat = (
+        - jnp.exp(0.5 * g_t) * xt
+        + jnp.sqrt(1 + jnp.exp(g_t)) * v_hat)
     g_t_grad = g_t_grad.reshape(* xt.shape)
     if high_precision:
+      alpha = jnp.where(1 - nn.sigmoid(g_t) <= 1e-3,
+                        jnp.exp(- g_t / 2),
+                        jnp.sqrt(1 - nn.sigmoid(g_t)))
       sigma = jnp.where(nn.sigmoid(g_t) <= 1e-3,
                         jnp.exp(g_t / 2),
                         jnp.sqrt(nn.sigmoid(g_t)))
     else:
+      alpha = jnp.sqrt(1 - nn.sigmoid(g_t))
       sigma = jnp.sqrt(nn.sigmoid(g_t))
-    return 0.5 * (- sigma * xt + eps_hat) * sigma * g_t_grad
+    normalizing_term = 0.5 * alpha * sigma * g_t_grad
+    return v_hat * normalizing_term

@@ -1,5 +1,4 @@
-# jax[cuda11_pip] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.htm
-jax
+# "jax[cuda12_pip]<=0.4.23" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 tensorflow
 tensorflow-datasets
 flax==0.7.0

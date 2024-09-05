@@ -33,9 +33,7 @@ def get_config():
       ignore_cache=False,
   )
   
-  config.vdm_type = 'z_pp'
-  # ppnoise, nonlinear, vdm, input_conditioned, ppnoise_conditioned
-  # z_scalar, z_pp, z_pp_velocity
+  config.vdm_type = 'mulan_velocity' # mulan_epsilon, mulan_velocity
 
   config.model = d(
       unet_type='vdm', # ldm, vdm
