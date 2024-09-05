@@ -19,7 +19,8 @@ We introduce *MuLAN* (MUltivariate Learned Adaptive Noise) that learns the forwa
 
 Note:  We only compare with results achieved without data augmentation.
 
-## Code and Dataset
+## Setup
+### Dependencies
 Install the dependencies via `pip` using the following commands:
 ```
 pip install -U "jax[cuda12_pip]<=0.4.23" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
@@ -27,10 +28,15 @@ pip install -U "jax[cuda12_pip]<=0.4.23" -f https://storage.googleapis.com/jax-r
 pip install -r gpu-requirements.txt
 ```
 
+### Dataset
 The experiments were conducted on CIFAR-10 and ImageNet32 datasets. We used the dataloader provided by `tensorflow_datasets`. To maintain consistency with previous baselines, we utilized the [older-version](http://image-net.org/small/train_32x32.tar) of ImageNet32, which is no longer publicly available. Therefore, we provide the dataset, which can be downloaded from this [google-drive link](https://drive.google.com/file/d/1I-QvjLRa1kVxc3iX05pmDEKEM0JeAq46/view?usp=share_link). To use this dataset please download the tar file and extract it into the `~/tensorflow_datasets` directory. The final structure should look like the following:
 ```
 ~/tensorflow_datasets/downsampled_imagenet/32x32/2.0.0/downsampled_imagenet-train.tfrecord-000*-of-00032
 ```
+
+### Code
+The implementation of MuLAN can be found in [ldm/model_mulan_epsilon.py](ldm/model_mulan_epsilon.py). The denoising model uses `noise-parameterization`, as described in `suppl. 11.1.1` of the paper. The file [ldm/model_mulan_velocity.py](ldm/model_mulan_velocity.py) implements velocity parameterization, as detailed in `suppl. 11.1.2` of the paper. 
+
 
 ## Likelihood Estimation
 Download the **checkpoints and Tensorboard logs** from the [Google Drive](https://drive.google.com/drive/folders/1RVnTljGDj4G8gu2ltYFX0wwD9OlKRpWT?usp=sharing) folder. Please note that the eval likelihood / BPD (bits per dimension) in the tensorboard log was computed using a partial dataset, which is why they are worse than the numbers reported in the paper. To compute the BPD accurately, use the following commands:
