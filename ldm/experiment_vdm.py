@@ -21,7 +21,7 @@ from typing import Any, Tuple
 from ldm.experiment import Experiment
 import ldm.model_vdm
 import ldm.model_mulan_epsilon
-import ldm.model_mulan_veloctiy
+import ldm.model_mulan_velocity
 
 
 class Experiment_VDM(Experiment):
@@ -31,7 +31,7 @@ class Experiment_VDM(Experiment):
     config = self.config
     vdm_types = {
         'mulan_epsilon': ldm.model_mulan_epsilon,
-        'mulan_velocity': ldm.model_mulan_veloctiy,
+        'mulan_velocity': ldm.model_mulan_velocity,
         'vdm': ldm.model_vdm,
       }
     config = ldm.model_vdm.VDMConfig(**config.model)
