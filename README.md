@@ -44,7 +44,7 @@ Download the **checkpoints and Tensorboard logs** from the [Google Drive](https:
 ### Exact likelihood Estimation
 To compute the exact likelihood as per `suppl. 15.2` use the following commands:
 ```
-JAX_DEFAULT_MATMUL_PRECISION=float32 XLA_PYTHON_CLIENT_MEM_FRACTION=0.85 python -m ldm.eval_bpd --config=ldm/configs/cifar10-conditioned.py --config.vdm_type=mulan_velocity  --checkpoint_directory=/share/kuleshov/ssahoo/diffusion_models/velocity_parameterization/1124188-vdm_type=z_pp_velocity-topk_noise_type=gamma-ckpt_restore_dir/checkpoints-0 --checkpoint=223
+JAX_DEFAULT_MATMUL_PRECISION=float32 XLA_PYTHON_CLIENT_MEM_FRACTION=0.85 python -m ldm.eval_bpd --config=ldm/configs/cifar10-conditioned.py --config.vdm_type=mulan_velocity  --checkpoint_directory=/share/kuleshov/ssahoo/diffusion_models/velocity_parameterization/1124188-vdm_type=mulan_velocity-topk_noise_type=gamma-ckpt_restore_dir/checkpoints-0 --checkpoint=223
 
 JAX_DEFAULT_MATMUL_PRECISION=float32 XLA_PYTHON_CLIENT_MEM_FRACTION=0.85 python -m ldm.eval_bpd --config=ldm/configs/imagenet32.py --config.vdm_type=mulan_velocity  --config.model.velocity_from_epsilon=True --checkpoint_directory=/share/kuleshov/ssahoo/diffusion_models/imagenet_mulan_epsilon/checkpoints-0 --checkpoint=220
 ```
@@ -76,10 +76,12 @@ This repository was built off of [VDM](https://github.com/google-research/vdm).
 
 ## Citation
 ```bib
-@article{sahoo2023diffusion,
-  title={Diffusion Models With Learned Adaptive Noise},
-  author={Sahoo, Subham Sekhar and Gokaslan, Aaron and De Sa, Chris and Kuleshov, Volodymyr},
-  journal={arXiv preprint arXiv:2312.13236},
-  year={2023}
+@inproceedings{
+sahoo2024diffusion,
+title={Diffusion Models With Learned Adaptive Noise},
+author={Subham Sekhar Sahoo and Aaron Gokaslan and Christopher De Sa and Volodymyr Kuleshov},
+booktitle={The Thirty-eighth Annual Conference on Neural Information Processing Systems},
+year={2024},
+url={https://openreview.net/forum?id=loMa99A4p8}
 }
 ```
