@@ -1,4 +1,4 @@
-# [Diffusion Models With Learned Adaptive Noise](https://arxiv.org/abs/2312.13236)
+# [Diffusion Models With Learned Adaptive Noise (Neuips 2024, spotlight)](https://arxiv.org/abs/2312.13236)
 By [Subham Sekhar Sahoo](https://s-sahoo.github.io), [Aaron Gokaslan](https://skylion007.github.io), [Chris De Sa](https://www.cs.cornell.edu/~cdesa/), [Volodymyr Kuleshov](https://www.cs.cornell.edu/~kuleshov/)
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/diffusion-models-with-learned-adaptive-noise/density-estimation-on-imagenet-32x32-1)](https://paperswithcode.com/sota/density-estimation-on-imagenet-32x32-1?p=diffusion-models-with-learned-adaptive-noise)
