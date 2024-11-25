@@ -1,2 +1,241 @@
-<h1>Coming Soon!</h1>
-Meanwhile please find our paper <a href="https://arxiv.org/abs/2312.13236">here</a>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- Meta tags for social media banners, these should be filled in appropriatly as they are your "business card" -->
+  <!-- Replace the content tag with appropriate information -->
+  <meta name="description" content="Diffusion Models With Learned Adaptive Noise">
+  <meta property="og:title" content="MDLM Blog post"/>
+  <meta property="og:description" content="Diffusion Models With Learned Adaptive Noise"/>
+  <meta property="og:url" content="https://s-sahoo.com/MuLAN"/>
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X630-->
+  <meta property="og:image" content="static/images/mulan.png" />
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+
+
+  <meta name="twitter:title" content="TWITTER BANNER TITLE META TAG">
+  <meta name="twitter:description" content="TWITTER BANNER DESCRIPTION META TAG">
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X600-->
+  <meta name="twitter:image" content="static/images/mulan.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- Keywords for your paper to be indexed by-->
+  <meta name="keywords" content="Simple and Effective Masked Diffusion Language Models MDLM">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+  <title>MuLAN</title>
+  <link rel="icon" type="image/x-icon" href="static/images/ganeshafavicon.ico">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+  rel="stylesheet">
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script src="static/js/bulma-carousel.min.js"></script>
+  <script src="static/js/bulma-slider.min.js"></script>
+  <script src="static/js/index.js"></script>
+  <script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+</head>
+<body>
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">Diffusion Models With Learned <br> Adaptive Noise</h1>
+            <div class="is-size-5 publication-authors">
+              <!-- Paper authors -->
+              <span class="author-block">
+                <a href="https://s-sahoo.github.io" target="_blank">Subham Sekhar Sahoo</a>,</span>
+                  <span class="author-block">
+                    <a href="https://skylion007.github.io" target="_blank">Aaron Gokaslan</a>,</span>
+                      <span class="author-block">
+                        <a href="https://www.cs.cornell.edu/~cdesa/" target="_blank">Chris De Sa</a>,</span>
+                              <span class="author-block">
+                                <a href="https://www.cs.cornell.edu/~kuleshov/" target="_blank">Volodymyr Kuleshov</a></span>
+                  </div>
+
+                  <div class="is-size-5 publication-authors">
+                    <span class="author-block">
+                      Cornell Tech, NY.<br>
+                      <!-- <b>38th Conference on Neural Information Processing Systems</b> -->
+                      <b>NeurIPS 2024</b> <b style="color:red;">(spotlight)</b>
+                    </span>
+                    
+                  </div>
+
+                  <div class="column has-text-centered">
+                    <div class="publication-links">
+
+
+                        <!-- ArXiv abstract Link -->
+                        <span class="link-block">
+                          <a href="https://arxiv.org/abs/2312.13236" target="_blank"
+                          class="external-link button is-normal is-rounded is-dark">
+                          <span class="icon">
+                            <i class="ai ai-arxiv"></i>
+                            </span>
+                            <span>arXiv</span>
+                          </a>
+                        </span>
+
+                        <!-- YouTube Link -->
+                        <span class="link-block">
+                          <a href="https://youtu.be/WjAUX23vgfg?si=9iZIeclrpY1P5e95" target="_blank"
+                          class="external-link button is-normal is-rounded is-dark">
+                          <span class="icon">
+                            <i class="fab fa-youtube" style="color: #cb422a;"></i>
+                            </span>
+                            <span>YouTube</span>
+                          </a>
+                        </span>
+
+                        <!-- Github link -->
+                        <span class="link-block">
+                          <a href="https://github.com/s-sahoo/MuLAN" target="_blank"
+                          class="external-link button is-normal is-rounded is-dark">
+                          <span class="icon">
+                            <i class="fab fa-github"></i>
+                          </span>
+                          <span>Code</span>
+                          </a>
+                        </span>
+                        </a>
+                      </span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Teaser video-->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <img src="static/images/mulan.png" alt="MY ALT TEXT"/>
+      <h4 class="subtitle has-text-centered">
+        (<em>Left</em>)  Comparison of noise schedule properties:
+        <b>Mu</b>ltivariate <b>L</b>earned <b>A</b>daptive <b>N</b>oise schedule (<b>MuLAN</b>) (ours)
+        versus a typical scalar noise schedule. Unlike scalar noise
+        schedules, MuLAN's multivariate and input-adaptive properties
+        improve likelihood. 
+        (<em>Right</em>) Likelihood in bits-per-dimension (BPD) on CIFAR-10
+        without data augmentation.
+      </h4>
+      <!-- <iframe width="100%" height="500"
+      src="https://www.youtube.com/embed/WjAUX23vgfg">
+      </iframe>
+      <h4 class="subtitle has-text-centered">
+        A <em>Simple and Effective</em> tutorial on our paper by <a href="https://www.youtube.com/@srush_nlp">Sasha Rush</a>.
+      </h4> -->
+    </div>
+  </div>
+</section>
+<!-- End teaser video -->
+
+
+
+<!-- Paper abstract -->
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Diffusion models have gained traction as powerful algorithms for synthesizing high-quality images.
+            Central to these algorithms is the diffusion process, a set of equations which maps data to noise
+            in a way that can significantly affect performance. In this paper, we explore whether the diffusion
+            process can be learned from data. Our work is grounded in Bayesian inference and seeks to improve
+            log-likelihood estimation by casting the learned diffusion process as an approximate variational
+            posterior that yields a tighter lower bound (ELBO) on the likelihood. A widely held assumption is
+            that the ELBO is invariant to the noise process: our work dispels this assumption and proposes
+            multivariate learned adaptive noise (MuLAN), a learned diffusion process that applies noise at
+            different rates across an image. Specifically, our method relies on a multivariate noise schedule
+            that is a function of the data to ensure that the ELBO is no longer invariant to the choice of the
+            noise schedule as in previous works. Empirically, MuLAN sets a new state-of-the-art in density
+            estimation on CIFAR-10 and ImageNet and reduces the number of training steps by 50%. 
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End paper abstract -->
+
+
+
+<!-- Paper poster -->
+<!-- <section class="hero is-small is-light">
+  <div class="hero-body">
+    <div class="container">
+      <h2 class="title">Poster</h2>
+
+      <iframe  src="static/pdfs/sample.pdf" width="100%" height="550">
+          </iframe>
+        
+      </div>
+    </div>
+  </section> -->
+<!--End paper poster -->
+
+
+<!--BibTex citation -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>@inproceedings{sahoo2024diffusion,
+  title={Diffusion Models With Learned Adaptive Noise},
+  author={Subham Sekhar Sahoo and Aaron Gokaslan and Christopher De Sa and Volodymyr Kuleshov},
+  booktitle={The Thirty-eighth Annual Conference on Neural Information Processing Systems},
+  year={2024},
+  url={https://openreview.net/forum?id=loMa99A4p8}}</code></pre>
+    </div>
+</section>
+<!--End BibTex citation -->
+
+
+  <footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+
+          <p>
+            This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a> which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+            You are free to borrow the of this website, we just ask that you link back to this page in the footer. <br> This website is licensed under a <a rel="license"  href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Statcounter tracking code -->
+  
+<!-- You can add a tracker to track page visits by creating an account at statcounter.com -->
+
+    <!-- End of Statcounter Code -->
+
+  </body>
+</html>
